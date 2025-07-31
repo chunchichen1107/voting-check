@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>823 公投錄取查詢系統</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 40px; background: #f7faff; }
+    input, button { padding: 10px; font-size: 16px; margin: 10px; }
+    #result { margin-top: 20px; font-size: 18px; }
+    table { margin: 20px auto; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 10px; }
+    th { background-color: #eee; }
+  </style>
+</head>
+<body>
+  <h1>🗳️ 823 公投錄取查詢系統</h1>
+  <p>請輸入您的姓名：</p>
+  <input type="text" id="nameInput" placeholder="例如：陳俊吉">
+  <button onclick="checkAdmission()">查詢</button>
+  <div id="result"></div>
+
+  <script>
+    
+const dataList = [
+  { name: "陳俊吉", stationNumber: "123", location: "八鍋", position: "主管" },
+  { name: "李書逸", stationNumber: "456", location: "梁社漢", position: "主監" },
+  { name: "金盈",   stationNumber: "789", location: "區公所", position: "管理員" }
+];
+
+
+    function checkAdmission() {
+      const name = document.getElementById("nameInput").value.trim();
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+
+      if (name === "") {
+        resultDiv.innerHTML = "<p style='color: orange;'>請輸入姓名。</p>";
+        return;
+      }
+
+      const person = dataList.find(row => row.name === name);
+
+      if (person) {
+        resultDiv.innerHTML = `
+          <table>
+            <tr><th>姓名</th><th>投開票所編號</th><th>地點</th><th>工作職稱</th></tr>
+            <tr>
+              <td>${person.name}</td>
+              <td>${person.stationNumber}</td>
+              <td>${person.location}</td>
+              <td>${person.position}</td>
+            </tr>
+          </table>
+          <p style="color: green; font-weight: bold;">✅ 您已錄取！</p>
+        `;
+      } else {
+        resultDiv.innerHTML = `<p style="color: red;">❌ 查無此人。</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
