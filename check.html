@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>錄取查詢系統（進階版）</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      background-color: #f0f8ff;
+    }
+    input, button {
+      margin: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    #result {
+      font-size: 18px;
+      margin-top: 20px;
+    }
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #aaa;
+    }
+    th {
+      background-color: #dff0d8;
+    }
+  </style>
+</head>
+<body>
+  <h1>📋 錄取資料查詢系統</h1>
+
+  <p>步驟 1：上傳含姓名、投開票所編號、地點、職稱的 Excel 名單</p>
+  <input type="file" id="excelFile" accept=".xlsx" />
+  <br>
+
+  <p>步驟 2：輸入您的姓名進行查詢</p>
+  <input type="text" id="nameInput" placeholder="例如：陳俊吉">
+  <button onclick="checkAdmission()">查詢</button>
+
+  <div id="result"></div>
+
+  <script>
+    let dataList = [];
+
+    document.getElementById('excelFile').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        dataList = jsonData.map(row => ({
+          name: String(row['姓名'] || "").trim(),
+          stationNumber: String(row['投開票所編號'] || "").trim(),
+          location: String(row['投開票所地點'] || "").trim(),
+          position: String(row['工作職稱'] || "").trim()
+        })).filter(row => row.name);
+
+        alert("名單上傳成功，共 " + dataList.length + " 筆！");
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    function checkAdmission() {
+      const name = document.getElementById("nameInput").value.trim();
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+
+      if (dataList.length === 0) {
+        resultDiv.innerHTML = "<p style='color: orange;'>請先上傳 Excel 名單。</p>";
+        return;
+      }
+
+      if (name === "") {
+        resultDiv.innerHTML = "<p style='color: orange;'>請輸入姓名。</p>";
+        return;
+      }
+
+      const person = dataList.find(row => row.name === name);
+
+      if (person) {
+        resultDiv.innerHTML = `
+          <table>
+            <tr><th>姓名</th><th>投開票所編號</th><th>投開票所地點</th><th>工作職稱</th></tr>
+            <tr>
+              <td>${person.name}</td>
+              <td>${person.stationNumber}</td>
+              <td>${person.location}</td>
+              <td>${person.position}</td>
+            </tr>
+          </table>
+          <p style="color: green; font-weight: bold;">✅ 恭喜，您已錄取！</p>
+        `;
+      } else {
+        resultDiv.innerHTML = `<p style="color: red; font-weight: bold;">❌ 很遺憾，${name} 不在錄取名單中。</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
